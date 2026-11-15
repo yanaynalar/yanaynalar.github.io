@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#26302a">
+    <meta name="description" content="takip">
+    <title>takip</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --forest: #26302a;
+            --forest-2: #35443a;
+            --sage: #647568;
+            --sage-light: #e9eee8;
+            --cream: #f4f3ee;
+            --paper: #fcfcf9;
+            --stone: #e2e2da;
+            --stone-dark: #777b74;
+            --clay: #a45f4b;
+            --clay-light: #eee0da;
+            --gold: #b39a68;
+            --text: #292d29;
+            --text-soft: #666c65;
+            --line: #dedfd8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 8% 4%, rgba(179, 154, 104, .055), transparent 25%),
+                radial-gradient(circle at 92% 85%, rgba(100, 117, 104, .055), transparent 28%),
+                var(--cream);
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse at 85% -35%, rgba(179, 154, 104, .14), transparent 40%),
+                linear-gradient(135deg, #26302a 0%, #303c34 100%);
+            color: #fff;
+            border-bottom: 2px solid var(--clay);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: .025;
+            background-image: radial-gradient(circle, #fff 0 1px, transparent 1px);
+            background-size: 22px 22px;
+        }
+
+        .hero-inner {
+            min-height: 68px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .site-name {
+            color: #fff;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.18rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: .02em;
+        }
+
+        .site-name::first-letter {
+            color: #cfb37b;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 35px;
+            gap: 11px;
+        }
+
+        .result-count {
+            display: flex;
+            align-items: center;
+            height: 35px;
+            margin: 0;
+            color: #dce0da;
+            font-size: .76rem;
+            line-height: 1;
+            font-weight: 650;
+        }
+
+        .result-count span {
+            margin-left: 3px;
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 35px;
+            width: 35px;
+            height: 35px;
+            margin: 0;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .055);
+            color: #fff;
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+            transition:
+                background .18s ease,
+                transform .25s ease,
+                border-color .18s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, .13);
+            border-color: rgba(255, 255, 255, .3);
+            color: #fff;
+        }
+
+        .refresh-btn:active {
+            transform: rotate(-45deg);
+        }
+
+        .source-bar {
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            background: rgba(244, 243, 238, .94);
+            border-bottom: 1px solid var(--line);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        .source-scroll {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            padding-top: 11px !important;
+            padding-bottom: 11px !important;
+            scrollbar-width: none;
+        }
+
+        .source-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .source-btn {
+            flex: 0 0 auto;
+            min-height: 37px;
+            padding: 6px 15px;
+            border: 1px solid #d4d7d0;
+            border-radius: 999px;
+            background: rgba(252, 252, 249, .62);
+            color: #687068;
+            font-size: .75rem;
+            font-weight: 700;
+            transition:
+                background .18s ease,
+                color .18s ease,
+                border-color .18s ease,
+                box-shadow .18s ease;
+        }
+
+        .source-btn:hover {
+            background: #fff;
+            color: var(--forest);
+            border-color: #bcc3bb;
+        }
+
+        .source-btn.active {
+            background: var(--forest);
+            border-color: var(--forest);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(38, 48, 42, .14);
+        }
+
+        main.container {
+            padding-top: 27px !important;
+            padding-bottom: 42px !important;
+        }
+
+        .vehicle-card {
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            box-shadow: 0 3px 12px rgba(39, 45, 40, .045);
+            transition:
+                transform .22s ease,
+                box-shadow .22s ease,
+                border-color .22s ease;
+        }
+
+        .vehicle-card::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--clay), var(--gold), var(--sage));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .25s ease;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-4px);
+            border-color: #cfd2cb;
+            box-shadow: 0 17px 35px rgba(39, 45, 40, .105);
+        }
+
+        .vehicle-card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .image-wrap {
+            position: relative;
+            overflow: hidden;
+            background: #d9d9d1;
+        }
+
+        .vehicle-img {
+            display: block;
+            width: 100%;
+            height: 230px;
+            object-fit: cover;
+            transition: transform .5s cubic-bezier(.2, .65, .25, 1);
+        }
+
+        .vehicle-card:hover .vehicle-img {
+            transform: scale(1.035);
+        }
+
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(to bottom, rgba(28, 34, 29, .24), transparent 34%, transparent 68%, rgba(28, 34, 29, .13));
+        }
+
+        .image-brand {
+            position: absolute;
+            top: 13px;
+            left: 13px;
+            padding: 6px 9px;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 3px;
+            background: rgba(38, 48, 42, .88);
+            color: #fff;
+            font-size: .63rem;
+            font-weight: 800;
+            letter-spacing: .1em;
+            backdrop-filter: blur(5px);
+        }
+
+        .image-year {
+            position: absolute;
+            top: 13px;
+            right: 13px;
+            padding: 6px 9px;
+            border-radius: 3px;
+            background: rgba(252, 252, 249, .94);
+            color: var(--forest);
+            font-size: .66rem;
+            font-weight: 800;
+        }
+
+        .vehicle-body {
+            padding: 18px 17px 16px;
+        }
+
+        .vehicle-model {
+            display: block;
+            color: var(--forest);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.04rem;
+            line-height: 1.25;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            text-decoration: none;
+        }
+
+        .vehicle-model:hover {
+            color: var(--clay);
+        }
+
+        .vehicle-version {
+            min-height: 20px;
+            margin-top: 5px;
+            color: #7c827b;
+            font-size: .72rem;
+            line-height: 1.4;
+        }
+
+        .specs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 14px;
+        }
+
+        .spec {
+            display: inline-flex;
+            align-items: center;
+            min-height: 27px;
+            padding: 4px 8px;
+            border: 1px solid #e0e2dc;
+            border-radius: 3px;
+            background: #f6f7f3;
+            color: #666d66;
+            font-size: .67rem;
+            font-weight: 650;
+        }
+
+        .price-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #e6e7e1;
+        }
+
+        .price-label {
+            margin-bottom: 4px;
+            color: #9b9f98;
+            font-size: .58rem;
+            font-weight: 800;
+            letter-spacing: .11em;
+        }
+
+        .price {
+            color: var(--forest);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.34rem;
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: -.025em;
+        }
+
+        .currency {
+            color: var(--clay);
+            font-family: inherit;
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        .option {
+            white-space: nowrap;
+            font-size: .64rem;
+            font-weight: 700;
+        }
+
+        .option.yes {
+            color: #26302a;
+        }
+
+        .option.no {
+            color: #c3c4c2;
+        }
+
+        .dealer {
+            margin-top: 14px;
+            color: #4e554e;
+            font-size: .71rem;
+            font-weight: 750;
+        }
+
+        .location {
+            margin-top: 2px;
+            color: #999e97;
+            font-size: .67rem;
+        }
+
+        .date {
+            margin-top: 9px;
+            color: #aaaFA8;
+            font-size: .63rem;
+        }
+
+        .license-plate {
+            margin-top: 0px;
+            color: #aaaFA8;
+            font-size: .63rem;
+        }
+
+        .vehicle-footer {
+            padding: 0 17px 17px;
+        }
+
+        .detail-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 40px;
+            border: 1px solid var(--forest);
+            border-radius: 3px;
+            background: var(--forest);
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 750;
+            letter-spacing: .01em;
+            text-decoration: none;
+            transition: background .18s ease, border-color .18s ease;
+        }
+
+        .detail-btn:hover {
+            background: var(--forest-2);
+            border-color: var(--forest-2);
+            color: #fff;
+        }
+
+        .detail-arrow {
+            font-size: .9rem;
+            transition: transform .18s ease;
+        }
+
+        .detail-btn:hover .detail-arrow {
+            transform: translateX(3px);
+        }
+
+        .state-box {
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--paper);
+            color: #777d76;
+            font-size: .81rem;
+            font-weight: 650;
+            box-shadow: 0 3px 12px rgba(39, 45, 40, .035);
+        }
+
+        .spinner-border {
+            color: var(--sage) !important;
+        }
+
+        #error {
+            border-radius: 6px;
+            background: #f8ece8;
+            color: #864839;
+            border: 1px solid #e5ccc4 !important;
+            font-size: .79rem;
+        }
+
+        @media(max-width:767px) {
+            .hero-inner {
+                min-height: 62px;
+                display: flex;
+                align-items: center;
+            }
+
+            .site-name {
+                font-size: 1.08rem;
+                line-height: 1;
+            }
+
+            .header-right {
+                height: 33px;
+                display: flex;
+                align-items: center;
+            }
+
+            .result-count {
+                height: 33px;
+                display: flex;
+                align-items: center;
+                font-size: .71rem;
+                line-height: 1;
+            }
+
+            .refresh-btn {
+                width: 33px;
+                height: 33px;
+                flex-basis: 33px;
+            }
+
+            main.container {
+                padding-top: 20px !important;
+            }
+
+            .vehicle-img {
+                height: 215px;
+            }
+
+            .vehicle-body {
+                padding: 16px 15px 15px;
+            }
+
+            .vehicle-footer {
+                padding: 0 15px 15px;
+            }
+        }
+
+        @media(min-width:768px) {
+            .source-scroll {
+                min-height: 61px;
+            }
+        }
+
+        @media(min-width:1400px) {
+            .container {
+                max-width: 1320px;
+            }
+
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="hero">
+        <div class="container hero-inner">
+            <div class="w-100 d-flex justify-content-between align-items-center">
+                <div class="site-name"> takip </div>
+                <div class="header-right">
+                    <div class="result-count"> sonuç <span id="count">0</span> </div>
+                    <button id="refresh" type="button" class="refresh-btn" title="Yenile" aria-label="Yenile"> ↻
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <nav class="source-bar">
+        <div class="container">
+            <div id="sources" class="source-scroll"></div>
+        </div>
+    </nav>
+    <main class="container">
+        <div id="loading">
+            <div class="state-box">
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden"> yükleniyor </span>
+                </div>
+            </div>
+        </div>
+        <div id="error" class="alert d-none shadow-sm"></div>
+        <div id="empty" class="d-none">
+            <div class="state-box"> bulunamadı </div>
+        </div>
+        <div id="vehicles" class="row g-3 g-lg-4"></div>
+    </main>
+    <script>
+        "use strict";
+        const LIST_URL = "https://raw.githubusercontent.com/yanaynalar/data/refs/heads/main/takip/data.json";
+        const LICENSE_PLATE_ID_PREFIX = "license-plate-id-";
+        const EXPERTISE_ID_PREFIX = "expertise-id-";
+        let sources = [];
+        let activeSource = null;
+
+        const loading = document.getElementById("loading");
+        const error = document.getElementById("error");
+        const empty = document.getElementById("empty");
+        const vehicles = document.getElementById("vehicles");
+        const sourcesEl = document.getElementById("sources");
+        const count = document.getElementById("count");
+        const refresh = document.getElementById("refresh");
+
+        function esc(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function slug(value) {
+            return String(value ?? "")
+                .trim()
+                .toLocaleLowerCase("tr-TR")
+                .replace(/ğ/g, "g")
+                .replace(/ü/g, "u")
+                .replace(/ş/g, "s")
+                .replace(/ı/g, "i")
+                .replace(/ö/g, "o")
+                .replace(/ç/g, "c")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9.\s-]/g, "")
+                .replace(/\s+/g, "-")
+                .replace(/-+/g, "-")
+                .replace(/^-|-$/g, "");
+        }
+
+        function detailUrl(source, car) {
+            const parts = [car.brand, car.model, car.modelTypeCode, car.fileNumber].map(slug).filter(Boolean);
+            return String(source.detailUrl || "").replace(/\/+$/, "") + (parts.length ? "/" + parts.join("-") : "");
+        }
+
+        function number(value) {
+            if (value === null || value === undefined || value === "") {
+                return "";
+            }
+            const n = Number(String(value).replace(/\./g, "").replace(",", "."));
+            return Number.isFinite(n) ? new Intl.NumberFormat("tr-TR").format(n) : esc(value);
+        }
+
+        function formatDateCustom(value) {
+            const date = new Date(value);
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        }
+
+        async function loadSources() {
+            loading.classList.remove("d-none");
+            error.classList.add("d-none");
+            empty.classList.add("d-none");
+            vehicles.innerHTML = "";
+            count.textContent = "0";
+
+            try {                
+                const response = await fetch(LIST_URL,
+                    {
+                        method: "GET",
+                        cache: "no-store",
+                        headers: { "Accept": "application/json" }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("kaynak listesi alınamadı. HTTP " + response.status);
+                }
+
+                const data = await response.json();
+                
+
+                if (!Array.isArray(data)) {
+                    throw new Error("kaynak JSON'u array olmalı.");
+                }
+                sources = data.filter(item => item && item.name && item.postUrl);
+
+                if (!sources.length) {
+                    throw new Error("geçerli kaynak bulunamadı.");
+                }
+                renderSources();
+                await selectSource(sources[0]);
+            }
+            catch (e) {
+                loading.classList.add("d-none");
+                error.textContent = e.message || "Bir hata oluştu.";
+                error.classList.remove("d-none");
+            }
+        }
+
+        function renderSources() {
+            sourcesEl.innerHTML = "";
+
+            sources.forEach(source => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "source-btn";
+                button.textContent = source.name;
+                button.addEventListener("click", () => selectSource(source));
+                source.button = button;
+                sourcesEl.appendChild(button);
+            });
+        }
+
+        async function selectSource(source) {
+            activeSource = source;
+
+            sources.forEach(item => {
+                if (!item.button) { return; }
+
+                item.button.classList.toggle("active", item === source);
+            });
+
+            await loadCars(source);
+        }
+
+        function getBody(source) {
+            if (source.postBody === undefined || source.postBody === null || source.postBody === "") {
+                return {};
+            }
+
+            if (typeof source.postBody === "object") {
+                return source.postBody;
+            }
+
+            try {
+                return JSON.parse(source.postBody);
+            }
+            catch {
+                throw new Error(source.name + " kaynağının postBody değeri geçerli JSON değil.");
+            }
+        }
+
+        async function loadCars(source) {
+            loading.classList.remove("d-none");
+            error.classList.add("d-none");
+            empty.classList.add("d-none");
+            vehicles.innerHTML = "";
+            count.textContent = "0";
+
+            try {
+                const body = getBody(source);
+                const response = await fetch(source.postUrl,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        body: JSON.stringify(body)
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("araç verisi alınamadı. HTTP " + response.status);
+                }
+
+                const data = await response.json();
+                const results = data && data.data && Array.isArray(data.data.results) ? data.data.results : [];
+
+                renderCars(results, source);
+
+                const total = data?.data?.total ?? results.length;
+
+                count.textContent = number(total);
+
+                renderLicensePlates(results, source);
+            }
+            catch (e) {
+                error.textContent = e.message || "araçlar yüklenirken hata oluştu.";
+                error.classList.remove("d-none");
+            }
+            finally {
+                loading.classList.add("d-none");
+            }
+        }
+
+        async function renderLicensePlates(list, source) {
+            list.forEach(async car => {
+                const licensePlateElement = document.getElementById(`${LICENSE_PLATE_ID_PREFIX}${car.fileNumber}`);
+                if (licensePlateElement) {
+                    const response = await fetch(source.vehicleDetailUrl,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Accept": "application/json"
+                            },
+                            body: JSON.stringify({ "FileNumber": car.fileNumber })
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("araç detay verisi alınamadı. HTTP " + response.status);
+                    }
+
+                    const data = await response.json();
+                    const results = data && data.data && Array.isArray(data.data) ? data.data : [];
+                    licensePlateElement.textContent = results[0]?.licensePlate || "";
+                }
+
+                const expertiseElement = document.getElementById(`${EXPERTISE_ID_PREFIX}${car.fileNumber}`);
+                if (expertiseElement) {
+                    const response = await fetch(source.expertiseUrl,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Accept": "application/json"
+                            },
+                            body: JSON.stringify({ "FileNumber": car.fileNumber })
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("araç ekspertiz verisi alınamadı. HTTP " + response.status);
+                    }
+
+                    const data = await response.json();
+                    const result = data && data.data ? data.data : {};
+
+                    const values = Object.values(result.schemaStatus);
+                    let changedCount = 0;
+                    let otherCount = 0;
+
+                    values.forEach(value => {
+                        if (!value || value === "1") return;
+
+                        const statuses = value.split(",");
+                        statuses.forEach(status => {
+                            status = status.trim();
+
+                            if (status === "D") {
+                                changedCount++;
+                            } else if (["L", "H", "B", "E", "Ç"].includes(status)) {
+                                otherCount++;
+                            }
+                        });
+                    });
+
+                    expertiseElement.textContent = "";
+                    for (let i = 0; i < changedCount; i++) {
+                        expertiseElement.innerHTML += `<span style="color:#d98f8f; font-size:18px;">●</span>`;
+                    }
+                    for (let i = 0; i < otherCount; i++) {
+                        expertiseElement.innerHTML += `<span style="color:#d9c477; font-size:18px;">●</span>`;
+                    }
+                    if (changedCount === 0 && otherCount === 0) {
+                        expertiseElement.innerHTML += `<span style="color:#91C9A5; font-size:18px;">●</span>`;
+                    }
+                }
+            });
+        }
+
+        function renderCars(list, source) {
+            vehicles.innerHTML = "";
+
+            if (!list.length) {
+                empty.classList.remove("d-none");
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+
+            list.forEach(car => {
+                const col = document.createElement("div");
+                col.className = "col-12 col-sm-6 col-lg-4 col-xl-3";
+                col.innerHTML = createCard(car, source);
+                fragment.appendChild(col);
+            });
+            vehicles.appendChild(fragment);
+        }
+
+        function createCard(car, source) {
+            const url = detailUrl(source, car);
+            const fallback = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500'%3E%3Crect width='800' height='500' fill='%23d9d9d1'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%237b8179' font-size='28'%3EGörsel yok%3C/text%3E%3C/svg%3E";
+            const brand = esc(car.brand);
+            const model = esc(car.model);
+            const modelType = esc(car.modelTypeCode);
+            const year = esc(car.year);
+            const km = esc(car.kmString || number(car.km));
+            const fuel = esc(car.fuelType);
+            const gear = esc(car.gearType);
+            const price = esc(car.priceString || number(car.price));
+            const dealer = esc(car.dealer);
+            const city = esc(car.city);
+            const published = esc(formatDateCustom(car.internetPublishDate));
+            const option = Number(car.hasOption) === 1 ? `<span class="option yes">● Opsiyon var</span>` : `<span class="option no">● Opsiyon yok</span>`;
+
+            return `
+                <article class="vehicle-card">
+                    <a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                        <div class="image-wrap">
+                            <img class="vehicle-img" src="${esc(car.firstimagePath || fallback)}" alt="${brand} ${model}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${fallback}'">
+                            <div class="image-overlay"></div>
+                            ${brand ? `<span class="image-brand">${brand}</span>` : ""}
+                            ${year ? `<span class="image-year">${year}</span>` : ""}
+                        </div>
+                    </a>
+                    <div class="vehicle-body">
+                        <a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="vehicle-model">${model}</a>
+                        <div class="vehicle-version">${modelType || "&nbsp;"}</div>
+                        <div class="specs">
+                            ${year ? `<span class="spec">${year}</span>` : ""}
+                            ${km ? `<span class="spec">${km} km</span>` : ""}
+                            ${fuel ? `<span class="spec">${fuel}</span>` : ""}
+                            ${gear ? `<span class="spec">${gear}</span>` : ""}
+                        </div>
+                        <div class="price-row">
+                            <div>
+                                <div class="price-label">FİYAT</div>
+                                <div class="price">${price}<span class="currency">₺</span>
+                            </div>
+                        </div>
+                        <div>${option}</div>
+                    </div>
+                    ${dealer || city ? `${dealer ? `<div class="dealer">${dealer}</div>` : ""}
+                    ${city ? `<div class="location">${city}</div>` : ""}` : ""}
+                    ${published ? `<div class="date">${published}</div>` : ""}
+                    <div id="${LICENSE_PLATE_ID_PREFIX}${car.fileNumber}" class="license-plate">-</div>
+                    <div id="${EXPERTISE_ID_PREFIX}${car.fileNumber}" class="license-plate">-</div>
+                    </div>
+                    <div class="vehicle-footer">
+                        <a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="detail-btn">
+                            <span>görüntüle</span>
+                            <span class="detail-arrow"> → </span>
+                        </a>
+                    </div>
+                </article>
+            `;
+        }
+
+        refresh.addEventListener("click", () => {
+            if (activeSource) {
+                loadCars(activeSource);
+            }
+            else {
+                loadSources();
+            }
+        });
+
+        loadSources();
+    </script>
+</body>
+
+</html>
